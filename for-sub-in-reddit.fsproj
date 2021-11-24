@@ -1,19 +1,17 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
-
   <ItemGroup>
     <Compile Include="src/Common.fs" />
+    <Compile Include="src/RedditResponse.fs" />
+    <Compile Include="src/RedditApi.fs" />
     <Compile Include="src/RedditAuth.fs" />
     <Compile Include="src/Program.fs" />
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="FSharp.SystemTextJson" Version="0.17.4" />
     <PackageReference Include="FsUnit.xUnit" Version="4.1.0" />
   </ItemGroup>
-
 </Project>
