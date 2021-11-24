@@ -89,7 +89,7 @@ let getListingRequest grant userAgent subreddit sort pagination =
         None
     else
     let sortStr = getSortString sort
-    let uri = $"https://oauth.reddit.com/r/%s{subreddit}%s{sortStr}"
+    let uri = $"https://oauth.reddit.com/r/%s{subreddit}/%s{sortStr}"
     let uriBuilder = new UriBuilder(uri)
 
     // Set Query String parameters
@@ -110,12 +110,11 @@ let getListingRequest grant userAgent subreddit sort pagination =
 let sendRequest (request: HttpRequestMessage, client: HttpClient) =
     task {
         let! response = client.SendAsync(request) |> Async.AwaitTask
-        let! clientContent = response.Content.ReadAsStringAsync() |> Async.AwaitTask
+        let! content = response.Content.ReadAsStringAsync() |> Async.AwaitTask
         match response.IsSuccessStatusCode with
         | false ->
-            let! content = response.Content.ReadAsStringAsync() |> Async.AwaitTask
-            return Error $"HTTP: %s{response.ReasonPhrase} Message: %s{content} SENT: %s{clientContent}"
-        | true -> return Ok clientContent
+            return Error $"HTTP: %s{response.ReasonPhrase} Message: %s{content} SENT: %s{request.RequestUri.AbsoluteUri}"
+        | true -> return Ok content
     }
 
 let getListings (content: string) =
