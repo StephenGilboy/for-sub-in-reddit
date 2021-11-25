@@ -4,3 +4,7 @@ DS_Store
 .ionide
 .vscode
 .fake
+.fsdocs
+.config
+output/
+.vs

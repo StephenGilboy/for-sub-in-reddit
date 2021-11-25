@@ -2,6 +2,7 @@
 open System.Net.Http
 open Common
 open RedditAuth
+open RedditListing
 open RedditApi
 
 let httpClient = new HttpClient()
@@ -20,11 +21,11 @@ let getOAuthGrant config =
             | Ok auth -> return Ok (auth, c.UserAgent)
     }
 
-let getNewsRequest (input: Result<OAuthGrant * string, string>) = 
+let getNewsRequest (input: Result<OAuthGrant * UserAgent, string>) = 
     match input with 
     | Error msg -> Error msg
     | Ok p ->
-        let sort = Sort.New
+        let sort = ListingSort.New
         let pagination = {
             Take = After ""
             Count = (uint)0
@@ -32,16 +33,16 @@ let getNewsRequest (input: Result<OAuthGrant * string, string>) =
         }
         let grant = fst p
         let userAgent = snd p
-        match getListingRequest grant userAgent "news" sort pagination with
-        | None -> Error "Renew the API Token"
-        | Some req -> Ok req
+        match getListingBySubreddit grant userAgent "news" sort pagination with
+        | Error msg -> Error msg
+        | Ok req -> Ok req
 
 let getRedditListings (request: Result<HttpRequestMessage, string>) =
     task {
         match request with
         | Error msg -> return Error msg
         | Ok req -> 
-            let! content = sendRequest (req, httpClient) |> Async.AwaitTask
+            let! content = sendRedditApiRequest (req, httpClient) |> Async.AwaitTask
             match content with 
             | Error msg -> return Error msg
             | Ok s -> 
