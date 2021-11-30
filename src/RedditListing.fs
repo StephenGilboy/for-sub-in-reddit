@@ -102,11 +102,12 @@ let getListingHttpRequestMessage (grant: OAuthGrant, userAgent: UserAgent, uri: 
     | Valid -> 
         let request = new HttpRequestMessage(HttpMethod.Get, uri)
         request.Headers.Add("Authorization", $"Bearer %s{grant.AccessToken}")
-        request.Headers.UserAgent.ParseAdd(string userAgent)
-        Ok request
+        match request.Headers.TryAddWithoutValidation("User-Agent", userAgent |> string) with
+        | false -> Error $"Unable to add User-Agent %s{userAgent |> string}"
+        | true -> Ok request
 
 /// Gets listings by their fullnames (id)
-let getListingByFullnameHttpRequestMethod (fullnames: List<Fullname>, grant: OAuthGrant, userAgent: UserAgent) =
+let getListingByFullnameHttpRequestMethod (grant: OAuthGrant, userAgent: UserAgent, baseUri: string, fullnames: List<Fullname>) =
     match getAccessTokenStatus grant with
     | Expired-> Error "Auth token expired"
     | Valid -> 
@@ -114,17 +115,17 @@ let getListingByFullnameHttpRequestMethod (fullnames: List<Fullname>, grant: OAu
             Error "Unable to get listings by fullname when there are no fullnames in the list"
         else
             let names = fullnames |> List.reduce (fun acc elm -> Fullname $"{acc},{elm}")
-            let uriBuilder = new UriBuilder($"%s{redditBaseUri}/by_id/%s{string names}")
+            let uriBuilder = new UriBuilder($"%s{baseUri}/by_id/%s{string names}")
             let uri = uriBuilder.ToString()
             getListingHttpRequestMessage (grant, userAgent, uri)
 
 /// Gets listings from given subreddit by the sort
-let getListingBySubreddit grant userAgent subreddit sort pagination =
+let getListingBySubreddit grant userAgent baseUri subreddit sort pagination =
     match getAccessTokenStatus grant with
     | Expired -> Error "Auth token exipred"
     | Valid ->
         let sortStr = getSortString sort
-        let uriBuilder = new UriBuilder($"%s{redditBaseUri}/r/%s{subreddit}/%s{sortStr}")
+        let uriBuilder = new UriBuilder($"%s{baseUri}/r/%s{subreddit}/%s{sortStr}")
 
         // Set Query String parameters
         let query = HttpUtility.ParseQueryString(uriBuilder.Query)     

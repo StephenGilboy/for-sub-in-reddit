@@ -33,7 +33,7 @@ let getNewsRequest (input: Result<OAuthGrant * UserAgent, string>) =
         }
         let grant = fst p
         let userAgent = snd p
-        match getListingBySubreddit grant userAgent "news" sort pagination with
+        match getListingBySubreddit grant userAgent "https://oauth.reddit.com" "news" sort pagination with
         | Error msg -> Error msg
         | Ok req -> Ok req
 
